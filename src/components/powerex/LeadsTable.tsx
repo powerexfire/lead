@@ -86,7 +86,7 @@ export function LeadsTable({ leads, totalLeads, isLoading, searchTerm, onSearchT
             <thead className="bg-muted/70 text-xs uppercase tracking-[0.12em] text-muted-foreground">
               <tr>
                 {['Name', 'Industry', 'Location', 'Status', 'Follow-up', 'Notes', 'Phone', 'Email', 'Website', 'Maps', 'Edit'].map((header) => (
-                  <th key={header} scope="col" className="px-3 py-2.5 font-bold">
+                  <th key={header} scope="col" className="whitespace-nowrap px-2.5 py-2.5 font-bold">
                     {header}
                   </th>
                 ))}
@@ -95,9 +95,9 @@ export function LeadsTable({ leads, totalLeads, isLoading, searchTerm, onSearchT
             <tbody className="divide-y divide-border">
               {leads.map((lead) => (
                 <tr key={lead.id} className="transition-colors hover:bg-accent/45">
-                  <th scope="row" className="px-3 py-2.5 font-bold text-foreground">{display(lead.name)}</th>
-                  <td className="px-3 py-2.5 font-medium text-muted-foreground">{display(lead.industry)}</td>
-                  <td className="max-w-[220px] px-3 py-2.5 font-medium text-muted-foreground">{display(lead.location || lead.address)}</td>
+                  <th scope="row" className="max-w-[240px] truncate px-2.5 py-2.5 text-left font-bold text-foreground" title={display(lead.name)}>{display(lead.name)}</th>
+                  <td className="whitespace-nowrap px-2.5 py-2.5 font-medium text-muted-foreground">{display(lead.industry)}</td>
+                  <td className="max-w-[170px] truncate px-2.5 py-2.5 font-medium text-muted-foreground" title={display(lead.location || lead.address)}>{display(lead.location || lead.address)}</td>
                   <td className="px-3 py-2.5"><LeadStatusBadge status={lead.status ?? "new"} /></td>
                   <td className="px-3 py-2.5 font-medium text-muted-foreground">{lead.followUpDate ? new Date(`${lead.followUpDate}T00:00:00`).toLocaleDateString() : "—"}</td>
                   <td className="max-w-[200px] truncate px-3 py-2.5 text-xs text-muted-foreground" title={lead.notes || undefined}>{display(lead.notes)}</td>
