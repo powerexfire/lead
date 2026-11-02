@@ -21,10 +21,10 @@ export function AppSidebar() {
   const { pathname } = useLocation();
 
   return (
-    <Sidebar collapsible="offcanvas" className="border-r border-border/70">
+    <Sidebar collapsible="icon" className="border-r border-border/70">
       <SidebarHeader className="border-b border-border/70 px-4 py-4">
-        <p className="text-xs font-black uppercase tracking-[0.22em] text-primary">Workspace</p>
-        <p className="text-sm font-black text-foreground">Lead Command</p>
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary group-data-[collapsible=icon]:hidden">Workspace</p>
+        <p className="text-sm font-bold text-foreground group-data-[collapsible=icon]:hidden">Lead Command</p>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -33,14 +33,14 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={pathname === item.url} tooltip={item.title}>
+                  <SidebarMenuButton asChild isActive={pathname === item.url} tooltip={item.title} className="group-data-[collapsible=icon]:!p-2">
                     <NavLink
                       to={item.url}
-                      className="flex items-center gap-2 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="flex items-center gap-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label={item.title}
                     >
-                      <item.icon className="h-4 w-4" aria-hidden="true" />
-                      <span>{item.title}</span>
+                      <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
