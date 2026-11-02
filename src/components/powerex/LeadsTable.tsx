@@ -98,16 +98,16 @@ export function LeadsTable({ leads, totalLeads, isLoading, searchTerm, onSearchT
                   <th scope="row" className="max-w-[240px] truncate px-2.5 py-2.5 text-left font-bold text-foreground" title={display(lead.name)}>{display(lead.name)}</th>
                   <td className="whitespace-nowrap px-2.5 py-2.5 font-medium text-muted-foreground">{display(lead.industry)}</td>
                   <td className="max-w-[170px] truncate px-2.5 py-2.5 font-medium text-muted-foreground" title={display(lead.location || lead.address)}>{display(lead.location || lead.address)}</td>
-                  <td className="px-3 py-2.5"><LeadStatusBadge status={lead.status ?? "new"} /></td>
-                  <td className="px-3 py-2.5 font-medium text-muted-foreground">{lead.followUpDate ? new Date(`${lead.followUpDate}T00:00:00`).toLocaleDateString() : "—"}</td>
-                  <td className="max-w-[200px] truncate px-3 py-2.5 text-xs text-muted-foreground" title={lead.notes || undefined}>{display(lead.notes)}</td>
-                  <td className="px-3 py-2.5">
+                  <td className="whitespace-nowrap px-2.5 py-2.5"><LeadStatusBadge status={lead.status ?? "new"} /></td>
+                  <td className="whitespace-nowrap px-2.5 py-2.5 font-medium text-muted-foreground">{lead.followUpDate ? new Date(`${lead.followUpDate}T00:00:00`).toLocaleDateString() : "—"}</td>
+                  <td className="max-w-[170px] truncate px-2.5 py-2.5 text-xs text-muted-foreground" title={lead.notes || undefined}>{display(lead.notes)}</td>
+                  <td className="whitespace-nowrap px-2.5 py-2.5">
                     <Copyable value={display(lead.phone)} label="phone" onCopy={onCopy} />
                   </td>
-                  <td className="px-3 py-2.5">
+                  <td className="whitespace-nowrap px-2.5 py-2.5">
                     <Copyable value={display(lead.email)} label="email" onCopy={onCopy} />
                   </td>
-                  <td className="px-3 py-2.5">
+                  <td className="px-2.5 py-2.5">
                     {display(lead.website) !== "—" && isSafeExternalUrl(lead.website) ? (
                       <a className="font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href={lead.website} target="_blank" rel="noreferrer">
                         Website
@@ -116,7 +116,7 @@ export function LeadsTable({ leads, totalLeads, isLoading, searchTerm, onSearchT
                       <span className="text-muted-foreground">—</span>
                     )}
                   </td>
-                  <td className="px-3 py-2.5">
+                  <td className="px-2.5 py-2.5">
                     {isSafeExternalUrl(lead.mapsLink) ? (
                       <Button asChild variant="table" size="sm" className="h-7 px-2">
                         <a href={lead.mapsLink} target="_blank" rel="noreferrer">
@@ -128,7 +128,7 @@ export function LeadsTable({ leads, totalLeads, isLoading, searchTerm, onSearchT
                       <span className="text-muted-foreground">—</span>
                     )}
                   </td>
-                  <td className="px-3 py-2.5">
+                  <td className="px-2.5 py-2.5">
                     <Button type="button" variant="table" size="iconSm" aria-label={`Edit follow-up for ${lead.name}`} onClick={() => onEditLead(lead)}>
                       <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
