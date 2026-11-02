@@ -157,7 +157,7 @@ function Copyable({ value, label, onCopy }: { value?: string; label: string; onC
 
   return (
     <div className="flex items-center gap-1.5">
-      <span className="max-w-[220px] truncate font-medium text-foreground" title={value}>{value}</span>
+      <span className="max-w-[150px] truncate font-medium text-foreground" title={value}>{value}</span>
       <Button type="button" variant="table" size="iconSm" aria-label={`Copy ${label}`} onClick={() => onCopy(value, label)}>
         <Copy className="h-3 w-3" aria-hidden="true" />
       </Button>
