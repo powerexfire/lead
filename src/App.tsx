@@ -11,7 +11,7 @@ import ResetPassword from "./pages/ResetPassword.tsx";
 const App = () => (
   <TooltipProvider>
     <Sonner />
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>
         <Route
           element={

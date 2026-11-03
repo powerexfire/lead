@@ -42,7 +42,7 @@ export function AuthGate({ children }: AuthGateProps) {
     if (mode === "reset") {
       setIsSubmitting(true);
       const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}reset-password`,
       });
       setIsSubmitting(false);
       if (error) toast.error(error.message);
@@ -58,7 +58,7 @@ export function AuthGate({ children }: AuthGateProps) {
     setIsSubmitting(true);
     const result = mode === "signIn"
       ? await supabase.auth.signInWithPassword({ email: cleanEmail, password })
-      : await supabase.auth.signUp({ email: cleanEmail, password, options: { emailRedirectTo: window.location.origin } });
+      : await supabase.auth.signUp({ email: cleanEmail, password, options: { emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}` } });
     setIsSubmitting(false);
 
     if (result.error) {
@@ -71,7 +71,7 @@ export function AuthGate({ children }: AuthGateProps) {
 
   const handleGoogleSignIn = async () => {
     setIsSubmitting(true);
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}${import.meta.env.BASE_URL}` });
     setIsSubmitting(false);
     if (result.error) toast.error(result.error.message);
   };

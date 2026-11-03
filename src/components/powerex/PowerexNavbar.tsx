@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Crown, Gauge, LogOut, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -18,7 +19,7 @@ export function PowerexNavbar({ userEmail, onSignOut }: { userEmail?: string; on
           >
             <Menu className="h-4 w-4" aria-hidden="true" />
           </SidebarTrigger>
-          <a href="/leads" className="flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Powerex Fire leads home">
+          <Link to="/leads" className="flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Powerex Fire leads home">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-fire">
               <Crown className="h-4 w-4" aria-hidden="true" />
             </div>
@@ -26,7 +27,7 @@ export function PowerexNavbar({ userEmail, onSignOut }: { userEmail?: string; on
               <p className="text-sm font-bold text-foreground">Powerex Fire</p>
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Lead Command</p>
             </div>
-          </a>
+          </Link>
         </div>
 
         <div className="flex min-w-0 items-center gap-2">

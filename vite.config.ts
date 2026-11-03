@@ -5,6 +5,9 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // GitHub Pages deploys under a sub-path (e.g. /lead/); VITE_BASE_PATH is set
+  // in the deploy workflow. Lovable hosting keeps the default root base.
+  base: process.env.VITE_BASE_PATH || "/",
   server: {
     host: "::",
     port: 8080,

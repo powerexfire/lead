@@ -31,6 +31,13 @@ jobs:
 
       - name: Build project
         run: npm run build
+        env:
+          # Site is served under https://powerexfire.in/lead/ — build asset
+          # URLs and router links must include the sub-path.
+          VITE_BASE_PATH: /lead/
+
+      - name: Add SPA fallback for deep links
+        run: cp dist/index.html dist/404.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
