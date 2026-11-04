@@ -8,9 +8,12 @@ const SettingsPage = () => {
     users,
     activity,
     currentRole,
+    webhookUrl,
+    isWebhookLoading,
     isLoading,
     isUserLoading,
     assignRole,
+    updateWebhookUrl,
     loadActivity,
     loadUsers,
   } = usePowerexWorkspace();
@@ -28,9 +31,12 @@ const SettingsPage = () => {
         currentRole={currentRole}
         users={users}
         activity={activity}
+        webhookUrl={webhookUrl}
+        isWebhookLoading={isWebhookLoading}
         onRefreshActivity={loadActivity}
         onRefreshUsers={() => loadUsers(false)}
         onRoleChange={assignRole}
+        onUpdateWebhook={updateWebhookUrl}
         isLoading={isLoading}
         isUserLoading={isUserLoading}
       />

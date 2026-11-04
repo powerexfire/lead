@@ -84,6 +84,77 @@ export function SettingsPanel({
         <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Lead Workflow</p>
+              <h2 className="mt-0.5 text-base font-bold text-card-foreground">Generate Leads webhook</h2>
+            </div>
+            {isAdmin && (
+              <Button
+                type="button"
+                variant="steel"
+                size="sm"
+                className="h-9"
+                onClick={() => setWebhookDraft(DEFAULT_WEBHOOK_URL)}
+                disabled={isWebhookLoading || trimmedWebhook === DEFAULT_WEBHOOK_URL}
+                aria-label="Restore the default lead workflow webhook"
+              >
+                <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                Restore default
+              </Button>
+            )}
+          </div>
+
+          <p className="mt-2 text-xs font-medium leading-5 text-muted-foreground">
+            The address that receives Generate Leads requests. Save a new address here and lead generation switches to it immediately.
+          </p>
+
+          {isAdmin ? (
+            <form onSubmit={handleWebhookSubmit} className="mt-3 grid gap-2" noValidate>
+              <label className="grid gap-1.5 text-xs font-bold text-card-foreground">
+                Webhook URL
+                <input
+                  value={webhookDraft}
+                  onChange={(event) => setWebhookDraft(event.target.value.slice(0, 500))}
+                  placeholder="https://…/webhook/…"
+                  inputMode="url"
+                  autoComplete="off"
+                  spellCheck={false}
+                  aria-invalid={Boolean(webhookError)}
+                  aria-describedby="webhook-help"
+                  className="h-9 rounded-lg border border-input bg-background px-3 font-mono text-xs font-semibold text-foreground outline-none transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+                />
+                <span id="webhook-help" className={webhookError ? "text-[11px] font-bold text-destructive" : "sr-only"}>
+                  {webhookError || "Must be a full address starting with http:// or https://"}
+                </span>
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button type="submit" variant="fire" size="sm" className="h-9 px-4" disabled={!webhookChanged || isWebhookLoading || Boolean(webhookError)}>
+                  {isWebhookLoading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Save className="h-4 w-4" aria-hidden="true" />}
+                  Save webhook
+                </Button>
+                {webhookUrl ? (
+                  <a
+                    href={webhookUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-background px-3 text-xs font-bold text-foreground transition-colors hover:bg-muted/60"
+                  >
+                    <Globe className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                    Open current
+                  </a>
+                ) : null}
+              </div>
+            </form>
+          ) : (
+            <div className="mt-3 rounded-lg border border-border bg-background p-3">
+              <p className="break-all font-mono text-xs font-semibold text-foreground">{webhookUrl || "Loading…"}</p>
+              <p className="mt-1 text-[11px] font-semibold text-muted-foreground">Only admins can change this address.</p>
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">User Management</p>
               <h2 className="mt-0.5 text-base font-bold text-card-foreground">Admin assignment</h2>
             </div>
