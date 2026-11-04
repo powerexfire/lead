@@ -40,6 +40,11 @@ export function isSafeExternalUrl(value?: string) {
   }
 }
 
+export function isValidWebhookUrl(value?: string | null) {
+  const candidate = (value ?? "").trim();
+  return candidate.length <= 500 && isSafeExternalUrl(candidate);
+}
+
 export function statusLabel(status?: LeadStatus) {
   return leadStatuses.find((value) => value === status) ?? "new";
 }

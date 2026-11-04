@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dedupeLeads, isLeadStatus, isSafeExternalUrl, makeLeadDedupeKey, statusLabel } from "./lead-pipeline";
+import { dedupeLeads, isLeadStatus, isSafeExternalUrl, isValidWebhookUrl, makeLeadDedupeKey, statusLabel } from "./lead-pipeline";
 import type { Lead, LeadStatus } from "@/components/powerex/types";
 
 const sampleLead = (overrides: Partial<Lead> = {}): Lead => ({
