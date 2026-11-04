@@ -25,7 +25,7 @@ export type SearchQuery = {
 
 export type LeadActivity = {
   id: string;
-  action: "generate" | "syncQueries" | "syncLeads" | "saveLeads" | "setUserRole";
+  action: "generate" | "syncQueries" | "syncLeads" | "saveLeads" | "setUserRole" | "setWebhook";
   industry: string | null;
   location: string | null;
   result_count: number;

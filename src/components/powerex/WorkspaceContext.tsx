@@ -17,6 +17,7 @@ export type FunctionResponse = {
   users?: AppUser[];
   currentRole?: AppRole;
   savedCount?: number;
+  webhookUrl?: string;
   error?: string;
 };
 
