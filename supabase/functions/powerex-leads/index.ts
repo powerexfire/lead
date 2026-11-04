@@ -86,6 +86,17 @@ Deno.serve(async (req) => {
       return json({ success: true, ...result });
     }
 
+    if (payload.data.action === "getWebhook") {
+      return json({ success: true, webhookUrl: await getWebhookUrl() });
+    }
+
+    if (payload.data.action === "setWebhook") {
+      await requireAdmin(userId);
+      const saved = await saveWebhookUrl(payload.data.webhookUrl);
+      await recordActivity(auth.token, userId, "setWebhook", "", "", 1, "success", `Lead workflow webhook updated.`);
+      return json({ success: true, webhookUrl: saved });
+    }
+
     if (payload.data.action === "syncQueries") {
       const queries = await readQueries();
       await recordActivity(auth.token, userId, "syncQueries", "", "", queries.length, "success", "Search queries synced from Query tab.");
