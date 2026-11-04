@@ -39,4 +39,12 @@ describe("lead pipeline rules", () => {
     expect(isSafeExternalUrl("https://powerexfire.com")).toBe(true);
     expect(isSafeExternalUrl("javascript:alert(1)")).toBe(false);
   });
+
+  it("accepts only full http(s) webhook addresses", () => {
+    expect(isValidWebhookUrl("https://redican.app.n8n.cloud/webhook/Powerex-Fire-Lead")).toBe(true);
+    expect(isValidWebhookUrl("http://localhost:5678/webhook-test/powerex")).toBe(true);
+    expect(isValidWebhookUrl("redican.app.n8n.cloud/webhook/Powerex-Fire-Lead")).toBe(false);
+    expect(isValidWebhookUrl("https://")).toBe(false);
+    expect(isValidWebhookUrl("")).toBe(false);
+  });
 });

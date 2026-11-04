@@ -2,9 +2,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Activity, CheckCircle2, Crown, Database, Globe, Loader2, RotateCcw, Save, ShieldCheck, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { AppRole, AppUser, LeadActivity } from "./types";
+import { isValidWebhookUrl } from "@/lib/lead-pipeline";
 
 const DEFAULT_WEBHOOK_URL = "https://redican.app.n8n.cloud/webhook/Powerex-Fire-Lead";
-const webhookPattern = /^https?:\/\/[^\s]{1,500}$/i;
 
 type SettingsPanelProps = {
   userEmail?: string;
