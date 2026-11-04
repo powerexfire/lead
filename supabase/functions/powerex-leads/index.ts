@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
       source: "Powerex Fire Lead Dashboard",
       requestedAt: new Date().toISOString(),
     };
-    const parsedWebhook = await postWebhook(webhookPayload);
+    const parsedWebhook = await postWebhook(await getWebhookUrl(), webhookPayload);
     let leads = dedupeLeads(normalizeLeads(extractLeadRecords(parsedWebhook), payload.data.industry, payload.data.location));
     let savedCount = 0;
 
@@ -265,8 +265,23 @@ function enforceRateLimit(key: string) {
   rateBuckets.set(key, bucket);
 }
 
-async function postWebhook(payload: Record<string, string>) {
-  const response = await fetchWithTimeout(WEBHOOK_URL, {
+async function getWebhookUrl() {
+  const client = serviceClient();
+  const { data, error } = await client.from("app_settings").select("value").eq("key", WEBHOOK_SETTING_KEY).maybeSingle();
+  if (error) throw new Error(`Webhook setting lookup failed: ${error.message}`);
+  const value = clean(data?.value ?? "");
+  return value || DEFAULT_WEBHOOK_URL;
+}
+
+async function saveWebhookUrl(webhookUrl: string) {
+  const client = serviceClient();
+  const { error } = await client.from("app_settings").upsert({ key: WEBHOOK_SETTING_KEY, value: webhookUrl, updated_at: new Date().toISOString() }, { onConflict: "key" });
+  if (error) throw new Error(`Webhook setting could not be saved: ${error.message}`);
+  return webhookUrl;
+}
+
+async function postWebhook(webhookUrl: string, payload: Record<string, string>) {
+  const response = await fetchWithTimeout(webhookUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify(payload),
