@@ -420,6 +420,8 @@ export function WorkspaceProvider({ session, children }: { session: Session; chi
     activity,
     users,
     currentRole,
+    webhookUrl,
+    isWebhookLoading,
     statusTone,
     statusMessage,
     isLoading,
@@ -440,6 +442,8 @@ export function WorkspaceProvider({ session, children }: { session: Session; chi
     syncLeads,
     saveLeadDetails,
     assignRole,
+    updateWebhookUrl,
+    loadWebhookUrl,
     applyQuery,
     retryLastAction,
     loadActivity,
@@ -447,9 +451,9 @@ export function WorkspaceProvider({ session, children }: { session: Session; chi
     copyValue,
     exportCsv,
   }), [
-    session, industry, location, leads, queries, activity, users, currentRole, statusTone, statusMessage,
+    session, industry, location, leads, queries, activity, users, currentRole, webhookUrl, isWebhookLoading, statusTone, statusMessage,
     isLoading, isSavingLead, isUserLoading, searchTerm, statusFilter, selectedLead, filteredLeads, activeQuery,
-    generateLeads, syncQueries, syncLeads, saveLeadDetails, assignRole, applyQuery, retryLastAction, loadActivity, loadUsers, copyValue, exportCsv,
+    generateLeads, syncQueries, syncLeads, saveLeadDetails, assignRole, updateWebhookUrl, loadWebhookUrl, applyQuery, retryLastAction, loadActivity, loadUsers, copyValue, exportCsv,
   ]);
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
