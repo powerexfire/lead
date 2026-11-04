@@ -17,6 +17,7 @@ export type FunctionResponse = {
   users?: AppUser[];
   currentRole?: AppRole;
   savedCount?: number;
+  webhookUrl?: string;
   error?: string;
 };
 
@@ -31,6 +32,7 @@ type WorkspaceValue = {
   activity: LeadActivity[];
   users: AppUser[];
   currentRole: AppRole;
+  webhookUrl: string;
   statusTone: StatusTone;
   statusMessage: string;
   isLoading: boolean;
@@ -51,6 +53,8 @@ type WorkspaceValue = {
   syncLeads: () => Promise<void>;
   saveLeadDetails: (lead: Lead, changes: { status: LeadStatus; notes: string; followUpDate: string | null }) => Promise<void>;
   assignRole: (email: string, role: AppRole) => Promise<void>;
+  updateWebhookUrl: (url: string) => Promise<void>;
+  loadWebhookUrl: () => Promise<void>;
   applyQuery: (query: SearchQuery) => void;
   retryLastAction: () => void;
   loadActivity: () => Promise<void>;
@@ -75,6 +79,8 @@ export function WorkspaceProvider({ session, children }: { session: Session; chi
   const [activity, setActivity] = useState<LeadActivity[]>([]);
   const [users, setUsers] = useState<AppUser[]>([]);
   const [currentRole, setCurrentRole] = useState<AppRole>("user");
+  const [webhookUrl, setWebhookUrl] = useState("");
+  const [isWebhookLoading, setIsWebhookLoading] = useState(false);
   const [statusTone, setStatusTone] = useState<StatusTone>("idle");
   const [statusMessage, setStatusMessage] = useState(initialStatus);
   const [isLoading, setIsLoading] = useState(false);
@@ -227,11 +233,37 @@ export function WorkspaceProvider({ session, children }: { session: Session; chi
     }
   }, [runAction]);
 
+  const loadWebhookUrl = useCallback(async () => {
+    setIsWebhookLoading(true);
+    try {
+      const data = await runAction({ action: "getWebhook" }, "Loading webhook settings...", { silent: true });
+      if (!data) return;
+      setWebhookUrl(data.webhookUrl ?? "");
+    } finally {
+      setIsWebhookLoading(false);
+    }
+  }, [runAction]);
+
+  const updateWebhookUrl = useCallback(async (url: string) => {
+    setIsWebhookLoading(true);
+    try {
+      const data = await runAction({ action: "setWebhook", webhookUrl: url.trim() }, "Saving webhook settings...", { silent: true });
+      if (!data) return;
+      setWebhookUrl(data.webhookUrl ?? url.trim());
+      setStatusTone("success");
+      setStatusMessage("Lead workflow webhook updated. Future lead generation will use the new address.");
+      toast.success("Webhook updated");
+    } finally {
+      setIsWebhookLoading(false);
+    }
+  }, [runAction]);
+
   useEffect(() => {
     void loadActivity();
     void loadUsers(true);
     void loadStoredLeads();
-  }, [loadActivity, loadStoredLeads, loadUsers]);
+    void loadWebhookUrl();
+  }, [loadActivity, loadStoredLeads, loadUsers, loadWebhookUrl]);
 
   const generateLeads = useCallback(async () => {
     lastActionRef.current = generateLeads;
@@ -388,6 +420,8 @@ export function WorkspaceProvider({ session, children }: { session: Session; chi
     activity,
     users,
     currentRole,
+    webhookUrl,
+    isWebhookLoading,
     statusTone,
     statusMessage,
     isLoading,
@@ -408,6 +442,8 @@ export function WorkspaceProvider({ session, children }: { session: Session; chi
     syncLeads,
     saveLeadDetails,
     assignRole,
+    updateWebhookUrl,
+    loadWebhookUrl,
     applyQuery,
     retryLastAction,
     loadActivity,
@@ -415,9 +451,9 @@ export function WorkspaceProvider({ session, children }: { session: Session; chi
     copyValue,
     exportCsv,
   }), [
-    session, industry, location, leads, queries, activity, users, currentRole, statusTone, statusMessage,
+    session, industry, location, leads, queries, activity, users, currentRole, webhookUrl, isWebhookLoading, statusTone, statusMessage,
     isLoading, isSavingLead, isUserLoading, searchTerm, statusFilter, selectedLead, filteredLeads, activeQuery,
-    generateLeads, syncQueries, syncLeads, saveLeadDetails, assignRole, applyQuery, retryLastAction, loadActivity, loadUsers, copyValue, exportCsv,
+    generateLeads, syncQueries, syncLeads, saveLeadDetails, assignRole, updateWebhookUrl, loadWebhookUrl, applyQuery, retryLastAction, loadActivity, loadUsers, copyValue, exportCsv,
   ]);
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;

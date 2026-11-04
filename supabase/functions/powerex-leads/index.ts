@@ -10,7 +10,8 @@ const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_sheets/v4";
 const SPREADSHEET_ID = "1013CNMc4Ydpr5x4TtNAlvbe3iPER0oFU-ysglfLWIYY";
 const QUERY_GID = 0;
 const LEADS_GID = 1560841529;
-const WEBHOOK_URL = "https://redican.app.n8n.cloud/webhook/Powerex-Fire-Lead";
+const DEFAULT_WEBHOOK_URL = "https://redican.app.n8n.cloud/webhook/Powerex-Fire-Lead";
+const WEBHOOK_SETTING_KEY = "lead_webhook_url";
 const REQUEST_TIMEOUT_MS = 22_000;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 16;
@@ -19,6 +20,10 @@ const sheetTitleCache = new Map<number, string>();
 
 const CleanString = z.string().trim().min(1).max(120).regex(/^[\p{L}\p{N}\s,.'/&()_-]+$/u, "Only letters, numbers and common location characters are allowed");
 const EmailString = z.string().trim().toLowerCase().email().max(255);
+const WebhookUrl = z.string().trim().max(500).url().refine(
+  (value) => /^https?:\/\//i.test(value),
+  "The webhook address must start with http:// or https://",
+);
 const RequestSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("generate"), industry: CleanString.max(80), location: CleanString.max(120) }),
   z.object({ action: z.literal("syncQueries") }),
@@ -26,6 +31,8 @@ const RequestSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("saveLeads"), leads: z.array(z.record(z.unknown())).max(100) }),
   z.object({ action: z.literal("getUsers") }),
   z.object({ action: z.literal("setUserRole"), email: EmailString, role: z.enum(["admin", "user"]) }),
+  z.object({ action: z.literal("getWebhook") }),
+  z.object({ action: z.literal("setWebhook"), webhookUrl: WebhookUrl }),
 ]);
 
 type Action = z.infer<typeof RequestSchema>["action"];
@@ -79,6 +86,17 @@ Deno.serve(async (req) => {
       return json({ success: true, ...result });
     }
 
+    if (payload.data.action === "getWebhook") {
+      return json({ success: true, webhookUrl: await getWebhookUrl() });
+    }
+
+    if (payload.data.action === "setWebhook") {
+      await requireAdmin(userId);
+      const saved = await saveWebhookUrl(payload.data.webhookUrl);
+      await recordActivity(auth.token, userId, "setWebhook", "", "", 1, "success", `Lead workflow webhook updated.`);
+      return json({ success: true, webhookUrl: saved });
+    }
+
     if (payload.data.action === "syncQueries") {
       const queries = await readQueries();
       await recordActivity(auth.token, userId, "syncQueries", "", "", queries.length, "success", "Search queries synced from Query tab.");
@@ -106,7 +124,7 @@ Deno.serve(async (req) => {
       source: "Powerex Fire Lead Dashboard",
       requestedAt: new Date().toISOString(),
     };
-    const parsedWebhook = await postWebhook(webhookPayload);
+    const parsedWebhook = await postWebhook(await getWebhookUrl(), webhookPayload);
     let leads = dedupeLeads(normalizeLeads(extractLeadRecords(parsedWebhook), payload.data.industry, payload.data.location));
     let savedCount = 0;
 
@@ -247,8 +265,23 @@ function enforceRateLimit(key: string) {
   rateBuckets.set(key, bucket);
 }
 
-async function postWebhook(payload: Record<string, string>) {
-  const response = await fetchWithTimeout(WEBHOOK_URL, {
+async function getWebhookUrl() {
+  const client = serviceClient();
+  const { data, error } = await client.from("app_settings").select("value").eq("key", WEBHOOK_SETTING_KEY).maybeSingle();
+  if (error) throw new Error(`Webhook setting lookup failed: ${error.message}`);
+  const value = clean(data?.value ?? "");
+  return value || DEFAULT_WEBHOOK_URL;
+}
+
+async function saveWebhookUrl(webhookUrl: string) {
+  const client = serviceClient();
+  const { error } = await client.from("app_settings").upsert({ key: WEBHOOK_SETTING_KEY, value: webhookUrl, updated_at: new Date().toISOString() }, { onConflict: "key" });
+  if (error) throw new Error(`Webhook setting could not be saved: ${error.message}`);
+  return webhookUrl;
+}
+
+async function postWebhook(webhookUrl: string, payload: Record<string, string>) {
+  const response = await fetchWithTimeout(webhookUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify(payload),

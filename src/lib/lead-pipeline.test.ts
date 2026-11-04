@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dedupeLeads, isLeadStatus, isSafeExternalUrl, makeLeadDedupeKey, statusLabel } from "./lead-pipeline";
+import { dedupeLeads, isLeadStatus, isSafeExternalUrl, isValidWebhookUrl, makeLeadDedupeKey, statusLabel } from "./lead-pipeline";
 import type { Lead, LeadStatus } from "@/components/powerex/types";
 
 const sampleLead = (overrides: Partial<Lead> = {}): Lead => ({
@@ -38,5 +38,13 @@ describe("lead pipeline rules", () => {
   it("only allows http and https links to be opened externally", () => {
     expect(isSafeExternalUrl("https://powerexfire.com")).toBe(true);
     expect(isSafeExternalUrl("javascript:alert(1)")).toBe(false);
+  });
+
+  it("accepts only full http(s) webhook addresses", () => {
+    expect(isValidWebhookUrl("https://redican.app.n8n.cloud/webhook/Powerex-Fire-Lead")).toBe(true);
+    expect(isValidWebhookUrl("http://localhost:5678/webhook-test/powerex")).toBe(true);
+    expect(isValidWebhookUrl("redican.app.n8n.cloud/webhook/Powerex-Fire-Lead")).toBe(false);
+    expect(isValidWebhookUrl("https://")).toBe(false);
+    expect(isValidWebhookUrl("")).toBe(false);
   });
 });
