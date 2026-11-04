@@ -28,13 +28,33 @@ export function SettingsPanel({
   currentRole,
   users,
   activity,
+  webhookUrl,
+  isWebhookLoading,
   onRefreshActivity,
   onRefreshUsers,
   onRoleChange,
+  onUpdateWebhook,
   isLoading,
   isUserLoading,
 }: SettingsPanelProps) {
   const isAdmin = currentRole === "admin";
+  const [webhookDraft, setWebhookDraft] = useState(webhookUrl);
+
+  useEffect(() => {
+    setWebhookDraft(webhookUrl);
+  }, [webhookUrl]);
+
+  const trimmedWebhook = webhookDraft.trim();
+  const webhookError = trimmedWebhook && !webhookPattern.test(trimmedWebhook)
+    ? "Enter a full address starting with http:// or https:// (up to 500 characters)."
+    : "";
+  const webhookChanged = trimmedWebhook !== webhookUrl.trim() && !webhookError;
+
+  const handleWebhookSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!webhookChanged || isWebhookLoading) return;
+    void onUpdateWebhook(trimmedWebhook);
+  };
 
   return (
     <section id="settings" className="grid min-w-0 gap-4 lg:grid-cols-[0.85fr_1.15fr] [&>*]:min-w-0">
