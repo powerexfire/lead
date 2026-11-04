@@ -32,6 +32,7 @@ type WorkspaceValue = {
   activity: LeadActivity[];
   users: AppUser[];
   currentRole: AppRole;
+  webhookUrl: string;
   statusTone: StatusTone;
   statusMessage: string;
   isLoading: boolean;
@@ -52,6 +53,8 @@ type WorkspaceValue = {
   syncLeads: () => Promise<void>;
   saveLeadDetails: (lead: Lead, changes: { status: LeadStatus; notes: string; followUpDate: string | null }) => Promise<void>;
   assignRole: (email: string, role: AppRole) => Promise<void>;
+  updateWebhookUrl: (url: string) => Promise<void>;
+  loadWebhookUrl: () => Promise<void>;
   applyQuery: (query: SearchQuery) => void;
   retryLastAction: () => void;
   loadActivity: () => Promise<void>;
