@@ -20,6 +20,10 @@ const sheetTitleCache = new Map<number, string>();
 
 const CleanString = z.string().trim().min(1).max(120).regex(/^[\p{L}\p{N}\s,.'/&()_-]+$/u, "Only letters, numbers and common location characters are allowed");
 const EmailString = z.string().trim().toLowerCase().email().max(255);
+const WebhookUrl = z.string().trim().max(500).url().refine(
+  (value) => /^https?:\/\//i.test(value),
+  "The webhook address must start with http:// or https://",
+);
 const RequestSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("generate"), industry: CleanString.max(80), location: CleanString.max(120) }),
   z.object({ action: z.literal("syncQueries") }),
