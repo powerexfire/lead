@@ -27,6 +27,8 @@ const RequestSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("saveLeads"), leads: z.array(z.record(z.unknown())).max(100) }),
   z.object({ action: z.literal("getUsers") }),
   z.object({ action: z.literal("setUserRole"), email: EmailString, role: z.enum(["admin", "user"]) }),
+  z.object({ action: z.literal("getWebhook") }),
+  z.object({ action: z.literal("setWebhook"), webhookUrl: WebhookUrl }),
 ]);
 
 type Action = z.infer<typeof RequestSchema>["action"];
