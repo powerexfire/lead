@@ -45,7 +45,7 @@ export function SettingsPanel({
   }, [webhookUrl]);
 
   const trimmedWebhook = webhookDraft.trim();
-  const webhookError = trimmedWebhook && !webhookPattern.test(trimmedWebhook)
+  const webhookError = trimmedWebhook && !isValidWebhookUrl(trimmedWebhook)
     ? "Enter a full address starting with http:// or https:// (up to 500 characters)."
     : "";
   const webhookChanged = trimmedWebhook !== webhookUrl.trim() && !webhookError;
