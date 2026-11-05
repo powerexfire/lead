@@ -33,6 +33,7 @@ type WorkspaceValue = {
   users: AppUser[];
   currentRole: AppRole;
   webhookUrl: string;
+  isWebhookLoading: boolean;
   statusTone: StatusTone;
   statusMessage: string;
   isLoading: boolean;
