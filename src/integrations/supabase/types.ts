@@ -98,11 +98,14 @@ export type Database = {
           follow_up_date: string | null
           id: string
           industry: string
+          lead_score: string | null
+          lead_tier: string | null
           location: string
           maps_link: string | null
           name: string
           notes: string
           phone: string | null
+          rating: string | null
           status: string
           updated_at: string
           user_id: string
@@ -116,11 +119,14 @@ export type Database = {
           follow_up_date?: string | null
           id?: string
           industry?: string
+          lead_score?: string | null
+          lead_tier?: string | null
           location?: string
           maps_link?: string | null
           name: string
           notes?: string
           phone?: string | null
+          rating?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -134,11 +140,14 @@ export type Database = {
           follow_up_date?: string | null
           id?: string
           industry?: string
+          lead_score?: string | null
+          lead_tier?: string | null
           location?: string
           maps_link?: string | null
           name?: string
           notes?: string
           phone?: string | null
+          rating?: string | null
           status?: string
           updated_at?: string
           user_id?: string
