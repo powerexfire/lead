@@ -34,6 +34,14 @@ export function LeadDetailsDialog({ lead, open, isSaving, onOpenChange, onSave }
           <DialogDescription>{lead?.name} · {lead?.location || lead?.address || "Location not listed"}</DialogDescription>
         </DialogHeader>
 
+        {(lead?.rating || lead?.leadScore || lead?.leadTier) && (
+          <div className="flex flex-wrap gap-2 text-xs" aria-label="Lead metrics from the leads sheet">
+            {lead?.rating ? <span className="rounded-md border border-border bg-muted px-2 py-0.5 font-medium text-foreground">Rating {lead.rating}</span> : null}
+            {lead?.leadScore ? <span className="rounded-md border border-border bg-muted px-2 py-0.5 font-medium text-foreground">Score {lead.leadScore}</span> : null}
+            {lead?.leadTier ? <span className="rounded-md border border-border bg-muted px-2 py-0.5 font-medium capitalize text-foreground">Tier {lead.leadTier}</span> : null}
+          </div>
+        )}
+
         <div className="grid gap-5 py-2">
           <div className="grid gap-2">
             <Label htmlFor="lead-status">Pipeline status</Label>

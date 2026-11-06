@@ -25,7 +25,7 @@ export function AppLayout({ session }: { session: Session }) {
           <AppSidebar />
           <div className="flex min-w-0 flex-1 flex-col">
             <PowerexNavbar userEmail={session.user.email} onSignOut={handleSignOut} />
-            <main className="w-full flex-1 px-3 py-4 sm:px-5 lg:px-6">
+            <main className="w-full flex-1 px-2 py-3 sm:px-3 lg:px-4">
               <Outlet />
             </main>
           </div>

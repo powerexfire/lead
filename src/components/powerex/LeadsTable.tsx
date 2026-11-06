@@ -1,7 +1,7 @@
-import { Copy, Download, ExternalLink, Pencil, RefreshCcw, SearchX } from "lucide-react";
+import { Copy, Download, Globe, MapPin, Pencil, RefreshCcw, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { isSafeExternalUrl } from "@/lib/lead-pipeline";
+import { cleanLeadMetric, isSafeExternalUrl } from "@/lib/lead-pipeline";
 import type { Lead, LeadStatus } from "./types";
 
 type LeadsTableProps = {
@@ -18,11 +18,7 @@ type LeadsTableProps = {
   onEditLead: (lead: Lead) => void;
 };
 
-const display = (value?: string) => {
-  const clean = value?.trim();
-  if (!clean || clean.toLowerCase() === "none" || clean.toLowerCase() === "null") return "—";
-  return clean;
-};
+const display = (value?: string) => cleanLeadMetric(value) ?? "—";
 
 export function LeadsTable({ leads, totalLeads, isLoading, searchTerm, onSearchTermChange, onSyncLeads, onExport, onCopy, statusFilter, onStatusFilterChange, onEditLead }: LeadsTableProps) {
   return (
@@ -64,11 +60,11 @@ export function LeadsTable({ leads, totalLeads, isLoading, searchTerm, onSearchT
       {isLoading && totalLeads === 0 ? (
         <div className="grid gap-3 p-4 sm:p-5" aria-label="Loading leads">
           {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="h-10 animate-pulse rounded-lg bg-muted" />
+            <div key={index} className="h-8 animate-pulse rounded-lg bg-muted" />
           ))}
         </div>
       ) : leads.length === 0 ? (
-        <div className="grid min-h-64 place-items-center p-8 text-center">
+        <div className="grid min-h-56 place-items-center p-8 text-center">
           <div className="max-w-sm">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-accent-foreground">
               <SearchX className="h-6 w-6" aria-hidden="true" />
@@ -81,12 +77,12 @@ export function LeadsTable({ leads, totalLeads, isLoading, searchTerm, onSearchT
         </div>
       ) : (
         <div className="w-full overflow-x-auto">
-          <table className="w-full min-w-[900px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[1080px] border-collapse text-left text-xs">
             <caption className="sr-only">Powerex Fire saved business leads</caption>
-            <thead className="bg-muted/70 text-xs uppercase tracking-[0.12em] text-muted-foreground">
+            <thead className="bg-muted/60 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
               <tr>
-                {['Name', 'Industry', 'Location', 'Status', 'Follow-up', 'Notes', 'Phone', 'Email', 'Website', 'Maps', 'Edit'].map((header) => (
-                  <th key={header} scope="col" className="whitespace-nowrap px-2 py-2.5 font-bold">
+                {["Name", "Rating", "Score", "Tier", "Industry", "Location", "Status", "Follow-up", "Notes", "Phone", "Email", "Web", "Maps", "Edit"].map((header) => (
+                  <th key={header} scope="col" className="whitespace-nowrap px-2 py-2">
                     {header}
                   </th>
                 ))}
@@ -94,41 +90,55 @@ export function LeadsTable({ leads, totalLeads, isLoading, searchTerm, onSearchT
             </thead>
             <tbody className="divide-y divide-border">
               {leads.map((lead) => (
-                <tr key={lead.id} className="transition-colors hover:bg-accent/45">
-                  <th scope="row" className="max-w-[210px] truncate px-2 py-2.5 text-left font-bold text-foreground" title={display(lead.name)}>{display(lead.name)}</th>
-                  <td className="whitespace-nowrap px-2 py-2.5 font-medium text-muted-foreground">{display(lead.industry)}</td>
-                  <td className="max-w-[170px] truncate px-2 py-2.5 font-medium text-muted-foreground" title={display(lead.location || lead.address)}>{display(lead.location || lead.address)}</td>
-                  <td className="whitespace-nowrap px-2 py-2.5"><LeadStatusBadge status={lead.status ?? "new"} /></td>
-                  <td className="whitespace-nowrap px-2 py-2.5 font-medium text-muted-foreground">{lead.followUpDate ? new Date(`${lead.followUpDate}T00:00:00`).toLocaleDateString() : "—"}</td>
-                  <td className="max-w-[170px] truncate px-2 py-2.5 text-xs text-muted-foreground" title={lead.notes || undefined}>{display(lead.notes)}</td>
-                  <td className="whitespace-nowrap px-2 py-2.5">
+                <tr key={lead.id} className="transition-colors hover:bg-accent/40">
+                  <th scope="row" className="max-w-[190px] truncate px-2 py-1.5 text-left font-normal text-foreground" title={display(lead.name)}>{display(lead.name)}</th>
+                  <td className="whitespace-nowrap px-2 py-1.5 font-normal text-muted-foreground">{display(lead.rating)}</td>
+                  <td className="whitespace-nowrap px-2 py-1.5 font-normal text-muted-foreground">{display(lead.leadScore)}</td>
+                  <td className="whitespace-nowrap px-2 py-1.5 font-normal text-muted-foreground">{lead.leadTier ? <TierChip tier={lead.leadTier} /> : "—"}</td>
+                  <td className="whitespace-nowrap px-2 py-1.5 font-normal text-muted-foreground">{display(lead.industry)}</td>
+                  <td className="max-w-[150px] truncate px-2 py-1.5 font-normal text-muted-foreground" title={display(lead.location || lead.address)}>{display(lead.location || lead.address)}</td>
+                  <td className="whitespace-nowrap px-2 py-1.5"><LeadStatusBadge status={lead.status ?? "new"} /></td>
+                  <td className="whitespace-nowrap px-2 py-1.5 font-normal text-muted-foreground">{lead.followUpDate ? new Date(`${lead.followUpDate}T00:00:00`).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "2-digit" }) : "—"}</td>
+                  <td className="max-w-[150px] truncate px-2 py-1.5 text-xs font-normal text-muted-foreground" title={lead.notes || undefined}>{display(lead.notes)}</td>
+                  <td className="whitespace-nowrap px-2 py-1.5">
                     <Copyable value={display(lead.phone)} label="phone" onCopy={onCopy} />
                   </td>
-                  <td className="whitespace-nowrap px-2 py-2.5">
+                  <td className="whitespace-nowrap px-2 py-1.5">
                     <Copyable value={display(lead.email)} label="email" onCopy={onCopy} />
                   </td>
-                  <td className="px-2 py-2.5">
-                    {display(lead.website) !== "—" && isSafeExternalUrl(lead.website) ? (
-                      <a className="font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href={lead.website} target="_blank" rel="noreferrer">
-                        Website
+                  <td className="px-2 py-1.5">
+                    {isSafeExternalUrl(lead.website) ? (
+                      <a
+                        aria-label={`Open website for ${lead.name}`}
+                        title={`Open ${display(lead.website)}`}
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        href={lead.website}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <Globe className="h-3.5 w-3.5" aria-hidden="true" />
                       </a>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
                   </td>
-                  <td className="px-2 py-2.5">
+                  <td className="px-2 py-1.5">
                     {isSafeExternalUrl(lead.mapsLink) ? (
-                      <Button asChild variant="table" size="sm" className="h-7 px-2">
-                        <a href={lead.mapsLink} target="_blank" rel="noreferrer">
-                          <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                          Maps
-                        </a>
-                      </Button>
+                      <a
+                        aria-label={`Open Google Maps location for ${lead.name}`}
+                        title="Open in Google Maps"
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        href={lead.mapsLink}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                      </a>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
                   </td>
-                  <td className="px-2 py-2.5">
+                  <td className="px-2 py-1.5">
                     <Button type="button" variant="table" size="iconSm" aria-label={`Edit follow-up for ${lead.name}`} onClick={() => onEditLead(lead)}>
                       <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
@@ -144,20 +154,29 @@ export function LeadsTable({ leads, totalLeads, isLoading, searchTerm, onSearchT
 }
 
 function LeadStatusBadge({ status }: { status: LeadStatus }) {
-  const variant = status === "won" ? "default" : status === "lost" ? "destructive" : status === "qualified" ? "secondary" : "outline";
-  return <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-semibold capitalize ${
-    variant === "default" ? "border-transparent bg-success text-success-foreground" :
-      variant === "destructive" ? "border-transparent bg-destructive text-destructive-foreground" :
-        variant === "secondary" ? "border-transparent bg-accent text-accent-foreground" : "border-border bg-muted text-muted-foreground"
+  return <span className={`inline-flex rounded-full border px-1.5 py-0.5 text-[11px] font-medium capitalize ${
+    status === "won" ? "border-transparent bg-success text-success-foreground" :
+      status === "lost" ? "border-transparent bg-destructive text-destructive-foreground" :
+        status === "qualified" ? "border-transparent bg-accent text-accent-foreground" : "border-border bg-muted text-muted-foreground"
   }`}>{status}</span>;
+}
+
+function TierChip({ tier }: { tier: string }) {
+  const label = display(tier);
+  const isHot = label.toLowerCase() === "hot";
+  return (
+    <span className={`inline-flex rounded-full border px-1.5 py-0.5 text-[11px] font-medium capitalize ${
+      isHot ? "border-transparent bg-accent text-accent-foreground" : "border-border bg-muted text-muted-foreground"
+    }`}>{label}</span>
+  );
 }
 
 function Copyable({ value, label, onCopy }: { value?: string; label: string; onCopy: (value: string, label: string) => void }) {
   if (!value || value === "—") return <span className="text-muted-foreground">—</span>;
 
   return (
-    <div className="flex items-center gap-1.5">
-      <span className="max-w-[145px] truncate font-medium text-foreground" title={value}>{value}</span>
+    <div className="flex items-center gap-1">
+      <span className="max-w-[130px] truncate font-normal text-foreground" title={value}>{value}</span>
       <Button type="button" variant="table" size="iconSm" aria-label={`Copy ${label}`} onClick={() => onCopy(value, label)}>
         <Copy className="h-3 w-3" aria-hidden="true" />
       </Button>
