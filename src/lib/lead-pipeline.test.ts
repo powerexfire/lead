@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dedupeLeads, isLeadStatus, isSafeExternalUrl, isValidWebhookUrl, makeLeadDedupeKey, statusLabel } from "./lead-pipeline";
+import { cleanLeadMetric, dedupeLeads, isLeadStatus, isSafeExternalUrl, isValidWebhookUrl, makeLeadDedupeKey, statusLabel } from "./lead-pipeline";
 import type { Lead, LeadStatus } from "@/components/powerex/types";
 
 const sampleLead = (overrides: Partial<Lead> = {}): Lead => ({
@@ -46,5 +46,14 @@ describe("lead pipeline rules", () => {
     expect(isValidWebhookUrl("redican.app.n8n.cloud/webhook/Powerex-Fire-Lead")).toBe(false);
     expect(isValidWebhookUrl("https://")).toBe(false);
     expect(isValidWebhookUrl("")).toBe(false);
+  });
+
+  it("shows sheet-sourced metrics only when the sheet actually provides a value", () => {
+    expect(cleanLeadMetric("5")).toBe("5");
+    expect(cleanLeadMetric(" hot ")).toBe("hot");
+    expect(cleanLeadMetric("")).toBeUndefined();
+    expect(cleanLeadMetric("None")).toBeUndefined();
+    expect(cleanLeadMetric("null")).toBeUndefined();
+    expect(cleanLeadMetric(undefined)).toBeUndefined();
   });
 });

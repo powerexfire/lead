@@ -47,6 +47,9 @@ type Lead = {
   email?: string;
   website?: string;
   mapsLink?: string;
+  rating?: string;
+  leadScore?: string;
+  leadTier?: string;
 };
 
 type AuthContext = {
@@ -367,10 +370,44 @@ async function appendNewLeads(leads: Lead[]) {
   const fresh = dedupeLeads(leads).filter((lead) => !existingKeys.has(leadKey(lead)));
   if (fresh.length === 0) return 0;
   const title = await sheetTitleByGid(LEADS_GID);
-  const range = `${quoteSheet(title)}!A:O`;
+  const range = `${quoteSheet(title)}!A:X`;
   await gateway(`/spreadsheets/${SPREADSHEET_ID}/values/${range}:append?valueInputOption=USER_ENTERED`, {
     method: "POST",
-    body: JSON.stringify({ majorDimension: "ROWS", values: fresh.map((lead) => [stableCid(lead), new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }), lead.industry, lead.location, lead.name, "", lead.address ?? "", lead.phone ?? "", lead.website ?? "", lead.email ?? "", "", "", "", "", "FALSE"]) }),
+    // Row order matches the Data tab headers: data_cid, name, industry, location, address, rating,
+    // phone, website, emails, lead_key, instagram, facebook, linkedin, source, searched_at,
+    // lead_score, lead_tier, status, first_seen, last_seen, ai_relevant, ai_reason, outreach_line, instagram_handle.
+    body: JSON.stringify({
+      majorDimension: "ROWS",
+      values: fresh.map((lead) => {
+        const savedAt = new Date().toISOString();
+        return [
+          stableCid(lead),
+          lead.name,
+          lead.industry,
+          lead.location,
+          lead.address ?? "",
+          lead.rating ?? "",
+          lead.phone ?? "",
+          lead.website ?? "",
+          lead.email ?? "",
+          lead.website ?? "",
+          "",
+          "",
+          "",
+          "dashboard",
+          savedAt,
+          lead.leadScore ?? "",
+          lead.leadTier ?? "",
+          "new",
+          savedAt,
+          savedAt,
+          "",
+          "",
+          "",
+          "",
+        ];
+      }),
+    }),
   });
   return fresh.length;
 }
@@ -424,6 +461,9 @@ function normalizeLead(record: Record<string, unknown>, index: number, fallbackI
     email: normalizeEmail(pick(normalized, ["email", "emails", "email_address"])),
     website,
     mapsLink: safeUrl(pick(normalized, ["google_maps_link", "maps_link", "map", "google_map"])) || mapsSearchLink(name, address),
+    rating: pick(normalized, ["rating", "google_rating"]),
+    leadScore: pick(normalized, ["lead_score", "score"]),
+    leadTier: pick(normalized, ["lead_tier", "tier"]),
   };
 }
 

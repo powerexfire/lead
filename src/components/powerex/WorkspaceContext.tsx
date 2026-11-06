@@ -118,12 +118,15 @@ export function WorkspaceProvider({ session, children }: { session: Session; chi
       status: string;
       notes: string;
       follow_up_date: string | null;
+      rating: string | null;
+      lead_score: string | null;
+      lead_tier: string | null;
     }> = [];
 
     for (let offset = 0; ; offset += pageSize) {
       const { data, error } = await supabase
         .from("sales_leads")
-        .select("id,name,industry,location,address,phone,email,website,maps_link,status,notes,follow_up_date")
+        .select("id,name,industry,location,address,phone,email,website,maps_link,status,notes,follow_up_date,rating,lead_score,lead_tier")
         .order("created_at", { ascending: false })
         .order("id", { ascending: false })
         .range(offset, offset + pageSize - 1);
@@ -150,6 +153,9 @@ export function WorkspaceProvider({ session, children }: { session: Session; chi
       status: normalizeLeadStatus(row.status),
       notes: row.notes,
       followUpDate: row.follow_up_date ?? undefined,
+      rating: row.rating ?? undefined,
+      leadScore: row.lead_score ?? undefined,
+      leadTier: row.lead_tier ?? undefined,
     })));
     return true;
   }, []);
@@ -174,16 +180,35 @@ export function WorkspaceProvider({ session, children }: { session: Session; chi
         email: lead.email?.trim().slice(0, 255) || null,
         website: lead.website?.trim().slice(0, 500) || null,
         maps_link: lead.mapsLink?.trim().slice(0, 1000) || null,
+        rating: lead.rating?.trim().slice(0, 40) || null,
+        lead_score: lead.leadScore?.trim().slice(0, 40) || null,
+        lead_tier: lead.leadTier?.trim().slice(0, 40) || null,
       }));
 
-      const { data, error } = await supabase
+      const dedupeKeys = rows.map((row) => row.dedupe_key);
+      const { data: existingRows, error: existingError } = await supabase
         .from("sales_leads")
-        .upsert(rows, { onConflict: "dedupe_key", ignoreDuplicates: true })
-        .select("id");
+        .select("id,dedupe_key")
+        .in("dedupe_key", dedupeKeys);
+      if (existingError) throw new Error(`Lead history could not be checked: ${existingError.message}`);
+      const existingKeys = new Set((existingRows ?? []).map((row) => row.dedupe_key));
+      const freshRows = rows.filter((row) => !existingKeys.has(row.dedupe_key));
+      // Existing records are refreshed with the latest sheet-sourced fields only;
+      // pipeline state (status, notes, follow-up date) is never overwritten.
+      const refreshedRows = rows.filter((row) => existingKeys.has(row.dedupe_key));
 
-      if (error) throw new Error(`Lead history could not be saved: ${error.message}`);
+      let savedCount = 0;
+      if (freshRows.length) {
+        const { data, error } = await supabase.from("sales_leads").insert(freshRows).select("id");
+        if (error) throw new Error(`Lead history could not be saved: ${error.message}`);
+        savedCount = data?.length ?? 0;
+      }
+      if (refreshedRows.length) {
+        const { error: refreshError } = await supabase.from("sales_leads").upsert(refreshedRows, { onConflict: "dedupe_key" });
+        if (refreshError) throw new Error(`Lead details could not be refreshed: ${refreshError.message}`);
+      }
+
       if (!(await loadStoredLeads())) throw new Error("Leads were saved, but the updated history could not be reloaded.");
-      const savedCount = data?.length ?? 0;
       return { savedCount, duplicateCount: Math.max(0, input.length - savedCount) };
     } finally {
       setIsSavingLead(false);
@@ -385,8 +410,8 @@ export function WorkspaceProvider({ session, children }: { session: Session; chi
 
   const exportCsv = useCallback(() => {
     if (!leads.length) return;
-    const headers = ["Name", "Industry", "Location", "Address", "Phone", "Email", "Website", "Google Maps Link", "Status", "Follow-up date", "Notes"];
-    const rows = leads.map((lead) => [lead.name, lead.industry, lead.location, lead.address ?? "", lead.phone ?? "", lead.email ?? "", lead.website ?? "", lead.mapsLink ?? "", lead.status ?? "new", lead.followUpDate ?? "", lead.notes ?? ""]);
+    const headers = ["Name", "Industry", "Location", "Address", "Rating", "Phone", "Email", "Website", "Google Maps Link", "Score", "Tier", "Status", "Follow-up date", "Notes"];
+    const rows = leads.map((lead) => [lead.name, lead.industry, lead.location, lead.address ?? "", lead.rating ?? "", lead.phone ?? "", lead.email ?? "", lead.website ?? "", lead.mapsLink ?? "", lead.leadScore ?? "", lead.leadTier ?? "", lead.status ?? "new", lead.followUpDate ?? "", lead.notes ?? ""]);
     const csv = [headers, ...rows].map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -401,7 +426,7 @@ export function WorkspaceProvider({ session, children }: { session: Session; chi
   const filteredLeads = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     return leads.filter((lead) => {
-      const matchesSearch = !term || [lead.name, lead.industry, lead.location, lead.phone, lead.email, lead.website, lead.notes].some((value) => value?.toLowerCase().includes(term));
+      const matchesSearch = !term || [lead.name, lead.industry, lead.location, lead.phone, lead.email, lead.website, lead.notes, lead.rating, lead.leadScore, lead.leadTier].some((value) => value?.toLowerCase().includes(term));
       return matchesSearch && (statusFilter === "all" || (lead.status ?? "new") === statusFilter);
     });
   }, [leads, searchTerm, statusFilter]);
