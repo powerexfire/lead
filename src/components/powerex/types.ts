@@ -10,6 +10,9 @@ export type Lead = {
   email?: string;
   website?: string;
   mapsLink?: string;
+  rating?: string;
+  leadScore?: string;
+  leadTier?: string;
   status?: LeadStatus;
   notes?: string;
   followUpDate?: string;

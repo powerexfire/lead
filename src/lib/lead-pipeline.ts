@@ -30,6 +30,12 @@ export function dedupeLeads(leads: Lead[]) {
   });
 }
 
+export function cleanLeadMetric(value?: string | null) {
+  const trimmed = (value ?? "").trim();
+  if (!trimmed) return undefined;
+  return ["none", "null", "undefined", "-", "—"].includes(trimmed.toLowerCase()) ? undefined : trimmed;
+}
+
 export function isSafeExternalUrl(value?: string) {
   if (!value) return false;
   try {
